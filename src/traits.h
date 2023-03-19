@@ -18,7 +18,7 @@ struct Traits {
 
 template<> struct Traits<CPU>
 {
-    static const int STACK_SIZE = 0x6400;
+    static const unsigned int STACK_SIZE = 0x64000;
 };
 
 __END_API
