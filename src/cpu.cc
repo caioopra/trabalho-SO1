@@ -21,7 +21,12 @@ CPU::Context::~Context()
 
 int CPU::switch_context(Context *from, Context *to)
 {
-     swapcontext(&from->_context, &to->_context);
+    if (from && to){
+        return swapcontext(&from->_context, &to->_context);
+    }
+    else{
+        return -1;
+    }
 }
 
 __END_API

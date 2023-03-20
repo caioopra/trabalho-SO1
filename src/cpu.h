@@ -21,12 +21,7 @@ class CPU
         public:
             ucontext_t _context;
             Context() {
-                 this->_stack = new char[this->STACK_SIZE]; 
-                 getcontext(&this->_context);
-                 this->_context.uc_link=0;
-                 this->_context.uc_stack.ss_sp = (void*)_stack;
-                 this->_context.uc_stack.ss_size = this->STACK_SIZE;
-                 this->_context.uc_stack.ss_flags = 0;                           
+                    _stack = 0;                           
                  }
 
             template<typename ... Tn>
