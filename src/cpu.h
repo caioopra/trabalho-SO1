@@ -21,7 +21,7 @@ class CPU
         public:
             ucontext_t _context;
             Context() {
-                    _stack = 0;                           
+                _stack = 0;                           
                  }
 
             template<typename ... Tn>
@@ -33,8 +33,9 @@ class CPU
                  this->_context.uc_stack.ss_sp = (void*)_stack;
                  this->_context.uc_stack.ss_size = this->STACK_SIZE;
                  this->_context.uc_stack.ss_flags = 0;  
-
-                 makecontext(&this->_context, (void (*)())(func), sizeof...(Tn), an...);
+                
+                //(void (*)(void))func -> casting a function pointer to a void*
+                 makecontext(&this->_context, (void (*)(void))func, sizeof...(Tn), an...);
             };
 
             ~Context();
