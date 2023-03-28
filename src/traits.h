@@ -10,6 +10,9 @@
 __BEGIN_API
 
 class CPU; //declaração das classes criadas nos trabalhos devem ser colocadas aqui
+class Thread; 
+class System;
+// class Main;  // precisa declarar Main?
 
 //declaração da classe Traits
 template<typename T>
