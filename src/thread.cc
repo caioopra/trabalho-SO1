@@ -8,14 +8,7 @@
 
 __BEGIN_API
 
-<<<<<<< HEAD
-int Thread::switch_context(Thread* prev, Thread* next) {
-}
-
-=======
 unsigned int Thread::thread_count = 0;
-
-
 
 int Thread::switch_context(Thread* prev, Thread* next) {
     Thread::_running = next;
@@ -23,7 +16,6 @@ int Thread::switch_context(Thread* prev, Thread* next) {
 }
 
 
->>>>>>> 3063a370d5e0245154033465d6e6a77c061d534e
 void Thread::thread_exit(int exit_code) {
     delete this->_context;
 
