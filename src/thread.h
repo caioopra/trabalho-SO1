@@ -62,10 +62,13 @@ private:
     /*
      * Qualquer outro atributo que você achar necessário para a solução.
      */ 
+    static unsigned int thread_count;
 };
 
 template <typename ... Tn>
 Thread::Thread(void (* entry)(Tn ...), Tn ... an) {
+    this->_context = new Context(entry,an...);
+    this->_id = Thread::thread_count++;
     
 }
 
