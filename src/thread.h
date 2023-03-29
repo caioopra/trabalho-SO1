@@ -49,7 +49,10 @@ public:
 
     /*
      * Qualquer outro método que você achar necessário para a solução.
-     */ 
+     */
+
+    // retorna ponteiro para contexto da Thread
+    Context* context();
 
 private:
     int _id;
