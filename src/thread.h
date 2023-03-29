@@ -51,7 +51,7 @@ class Thread {
      */
 
     // retorna ponteiro para contexto da Thread
-    Context* context();
+    Context* context() { return _context; }
 
    private:
     int _id;
@@ -66,12 +66,12 @@ class Thread {
 
 template <typename... Tn>
 Thread::Thread(void (*entry)(Tn...), Tn... an) {
-    this->context() = new Context(entry, an...);
+    this->_context = new Context(entry, an...);
 
     if (!this->thread_count) {
         this->thread_count = 0;
     }
-    this->id() = this->thread_count++;
+    this->_id = this->thread_count++;
 }
 
 __END_API

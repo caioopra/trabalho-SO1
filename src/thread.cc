@@ -8,13 +8,16 @@
 
 __BEGIN_API
 
+// valores iniciais para os atributos static
 unsigned int Thread::thread_count = 0;
+Thread* Thread::_running = nullptr;
 
 int Thread::switch_context(Thread* prev, Thread* next) {
-    Thread::_running = next;
-    return CPU::switch_context(prev->_context,next->_context);
-}
+    int switch_return = CPU::switch_context(prev->_context, next->_context);
+    _running = next;
 
+    return switch_return;
+}
 
 void Thread::thread_exit(int exit_code) {
     delete this->_context;
