@@ -4,6 +4,6 @@
 
 __BEGIN_API
 
-static void System::init();
+void System::init();
 
 __END_API
