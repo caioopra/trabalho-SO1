@@ -17,12 +17,13 @@ class Debug;
 // declaração da classe Traits
 template <typename T>
 struct Traits {
-    static const bool debbuged = false;
+    static const bool debugged = false;
 };
 
 template <>
 struct Traits<CPU> {
     static const unsigned int STACK_SIZE = 0x64000;
+    static const bool debugged = true;;
 };
 
 template <>
@@ -31,16 +32,18 @@ struct Traits<Debug> : public Traits<void> {
     static const bool warning = false;
     static const bool info = false;
     static const bool trace = true;
+
+    static const bool debugged;
 };
 
 template <>
 struct Traits<System> : public Traits<void> {
-    static const bool debbuged = true;
+    static const bool debugged = true;
 };
 
 template <>
 struct Traits<Thread> : public Traits<void> {
-    static const bool debbuged = true;
+    static const bool debugged = true;
 };
 
 __END_API

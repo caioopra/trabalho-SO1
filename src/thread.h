@@ -64,7 +64,7 @@ class Thread {
     static unsigned int thread_count;
 };
 
-template <typename... Tn>
+template <typename ... Tn>
 Thread::Thread(void (*entry)(Tn...), Tn... an) {
     this->_context = new Context(entry, an...);
 

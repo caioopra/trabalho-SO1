@@ -4,8 +4,6 @@
 
 #include <iostream>
 
-#include "traits.h"
-
 __BEGIN_API
 
 // valores iniciais para os atributos static
@@ -20,6 +18,7 @@ int Thread::switch_context(Thread* prev, Thread* next) {
 }
 
 void Thread::thread_exit(int exit_code) {
+
     delete this->_context;
 
     Thread::thread_count--;
