@@ -122,12 +122,12 @@ template <typename... Tn>
 Thread::Thread(void (*entry)(Tn...), Tn... an) : _link(this, (std::chrono::duration_cast<std::chrono::microseconds>
     (std::chrono::high_resolution_clock::now().time_since_epoch()).count()))/* inicialização de _link */
 {
-    db<Thread>(TRC) << " - Thread (" << _thread_counter << ") criada \n";
+    db<Thread>(TRC) << " - Thread (" << _thread_count << ") criada \n";
     this->_context = new Context(entry, an...);
     this->_id = this->_thread_count++;
 
     if (this->_id > 0) {
-        _ready.insert_tail(&_link;)
+        _ready.insert_tail(&_link);
     }
 
     this->_state = READY;

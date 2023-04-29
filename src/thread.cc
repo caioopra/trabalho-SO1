@@ -57,11 +57,21 @@ int Thread::id() {
     return this->_id;
 }
 
-void dispatcher() {
+void Thread::dispatcher() {
 }
 
 CPU::Context* Thread::context() {
     return _context;
+}
+
+
+Thread::~Thread(){
+    Thread::_ready.remove(&this->_link);
+    delete this->_context;
+}
+
+void Thread::yield(){
+
 }
 
 __END_API
