@@ -60,46 +60,38 @@ void Thread::dispatcher() {
     
     while(Thread::_ready.size() > 0) {
         // retorna ponteiro para proxima thread na fila
-        Thread* proxima_thread = Thread::_ready.remove()->object();
+        db<Thread>(TRC) << " - remove linha 64 : " << Thread::_ready.size() << "\n";
+        Thread* proxima_thread = Thread::_ready.remove_head()->object();
         
         Thread::_dispatcher._state = READY;
-        Thread::_ready.insert_tail(&Thread::_dispatcher._link);
-
+        Thread::_ready.insert(&Thread::_dispatcher._link);
         Thread::_running = proxima_thread;
         proxima_thread->_state = RUNNING;
 
         Thread::switch_context(&Thread::_dispatcher, proxima_thread);
 
-        // if (Thread::_ready.head()->object()->_state == FINISHING){
-        if (Thread::_running->_state == FINISHING){  
-            Thread::_ready.remove(proxima_thread);
+        if (Thread::_ready.size() > 0 && Thread::_ready.head()->object()->_state == FINISHING){
+        // if (Thread::_ready.size() > 0 && Thread::_running->_state == FINISHING){  
+            db<Thread>(TRC) << " - remove linha 76 : " << Thread::_ready.size() << "\n";
+            Thread::_ready.remove_head();
+
         }
     }
 
     Thread::_dispatcher._state = FINISHING;
-    Thread::_ready.remove(&Thread::_dispatcher);
+    // Thread::_ready.remove(&Thread::_dispatcher);
 
     db<Thread>(TRC) << " - Dispatcher liberado, indo para Thread Main \n";
     Thread::switch_context(&Thread::_dispatcher, &Thread::_main);
-}
-
-CPU::Context* Thread::context() {
-    return _context;
-}
-
-
-Thread::~Thread() {
-    db<Thread>(TRC) << " - fim da thread " << id() << "\n";
-    Thread::_ready.remove(&this->_link);
-    delete this->_context;
 }
 
 void Thread::yield(){
     db<Thread>(TRC) << " - yield chamado pela Thread " << Thread::_running->id() << "\n";
 
     Thread *current_thread = Thread::_running;
+    db<Thread>(TRC) << " - remove linha 92 : " << Thread::_ready.size() << "\n";
     Thread *proxima_thread = Thread::_ready.remove()->object();
-
+    
     if(current_thread->_state != FINISHING && current_thread != &Thread::_main){
         current_thread->_link.rank(std::chrono::duration_cast<std::chrono::microseconds>
         (std::chrono::high_resolution_clock::now().time_since_epoch()).count());
@@ -111,6 +103,18 @@ void Thread::yield(){
     Thread::_running->_state = RUNNING;
     
     Thread::switch_context(current_thread,proxima_thread);
+}
+
+CPU::Context* Thread::context() {
+    return _context;
+}
+
+Thread::~Thread() {
+    db<Thread>(TRC) << " - fim da thread " << id() << "\n";
+    Thread::_ready.remove(&this->_link);
+    if (this->context()){
+        delete this->_context;
+    }
 }
 
 __END_API

@@ -59,7 +59,6 @@ private:
         }
         std::cout << name << ": fim\n";
 
-
         ping_pong_threads[id]->thread_exit(0);
     }
 

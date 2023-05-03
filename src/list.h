@@ -459,6 +459,8 @@ public:
         else
             return 0;
     }
+
+    ~Ordered_List(){}
 };
 
 __END_API
