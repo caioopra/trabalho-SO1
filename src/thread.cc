@@ -7,9 +7,9 @@
 __BEGIN_API
 
 // valores iniciais para os atributos static
-Thread* Thread::_running = nullptr;
 unsigned int Thread::_thread_count = 0;
 
+Thread* Thread::_running;
 Thread Thread::_main;
 CPU::Context Thread::_main_context;
 Thread Thread::_dispatcher;
@@ -19,18 +19,19 @@ Thread::Ready_Queue Thread::_ready;
 void Thread::init(void (*main)(void*)) {
     db<Thread>(TRC) << " - Inicializando Threads Main e Dispatcher\n";
 
-    new (&_ready) Thread::Ready_Queue();
+    // new (&_ready) Thread::Ready_Queue();
 
     // "placement new" pra isntanciar Thread main
     new (&_main) Thread(main, (void*)"Main");
     new (&_main_context) CPU::Context();
+    new (&_dispatcher) Thread(&dispatcher);
 
     // criando thread Dispatcher, argumentos: *dispatcher(), (void*) NULL
     // cast para void* de dispatcher() e depois para void o conteúdo desse void*
-    new (&_dispatcher) Thread((void (*)(void*)) & Thread::dispatcher, (void*)NULL);
 
-    Thread::_running = &Thread::_main;  // atualiza ponteiro da thread em exec
-    Thread::_main._state = RUNNING;     // muda estado da thread main
+    _main._state = RUNNING;     // muda estado da thread main
+    _running = &_main;  // atualiza ponteiro da thread em exec
+
 
     CPU::switch_context(&_main_context, _main.context());
 }

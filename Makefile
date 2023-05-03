@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-c -Wall
+CFLAGS=-c -Wall -g
 SRCDIR=src
 INCDIR=include
 BUILDDIR=build

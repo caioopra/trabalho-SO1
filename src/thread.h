@@ -123,14 +123,14 @@ Thread::Thread(void (*entry)(Tn...), Tn... an) : _link(this, (std::chrono::durat
     (std::chrono::high_resolution_clock::now().time_since_epoch()).count()))/* inicialização de _link */
 {
     db<Thread>(TRC) << " - Thread (" << _thread_count << ") criada \n";
-    _context = new CPU::Context(entry, an...);
-    _id = Thread::_thread_count++;
+    this->_context = new CPU::Context(entry, an...);
+    this->_id = Thread::_thread_count++;
+    this->_state = READY;
 
     if (_id > 0) {
         _ready.insert_tail(&_link);
     }
 
-    _state = READY;
 }
 
 __END_API
