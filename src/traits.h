@@ -14,6 +14,7 @@ class Thread;
 class System;
 class Debug;
 class Lists;
+class Main;
 
 // declaração da classe Traits
 template <typename T>
@@ -24,7 +25,11 @@ struct Traits {
 template <>
 struct Traits<CPU> {
     static const unsigned int STACK_SIZE = 0x64000;
-    static const bool debugged = true;;
+    static const bool debugged = false;
+};
+template <>
+struct Traits<Lists> : public Traits<void>{
+    static const bool debugged = false;
 };
 
 template <>
@@ -33,22 +38,15 @@ struct Traits<Debug> : public Traits<void> {
     static const bool warning = false;
     static const bool info = false;
     static const bool trace = true;
-
-    static const bool debugged;
 };
 
 template <>
 struct Traits<System> : public Traits<void> {
-    static const bool debugged = true;
+    static const bool debugged = false;
 };
 
 template <>
 struct Traits<Thread> : public Traits<void> {
-    static const bool debugged = true;
-};
-
-template <>
-struct Traits<Lists> : public Traits<void> {
     static const bool debugged = true;
 };
 
