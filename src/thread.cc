@@ -37,13 +37,14 @@ void Thread::init(void (*main)(void*)) {
 }
 
 int Thread::switch_context(Thread* prev, Thread* next) {
-    _running = next;
-    int switch_return = CPU::switch_context(prev->_context, next->_context);
+    if (prev->id() != next->id()) {
+        _running = next;
+        return CPU::switch_context(prev->_context, next->_context);
+    }
 
-    return switch_return;
+    return 0;
 }
 
-// TODO: alterar
 void Thread::thread_exit(int exit_code) {
     db<Thread>(TRC) << " - Thread (" << id() << "): exit code: " << exit_code << "\n";
     Thread::_thread_count--;
@@ -72,7 +73,6 @@ void Thread::dispatcher() {
         Thread::switch_context(&Thread::_dispatcher, proxima_thread);
 
         if (Thread::_ready.size() > 0 && Thread::_ready.head()->object()->_state == FINISHING){
-        // if (Thread::_ready.size() > 0 && Thread::_running->_state == FINISHING){  
             db<Thread>(TRC) << " - remove linha 76 : " << Thread::_ready.size() << "\n";
             Thread::_ready.remove_head();
 
