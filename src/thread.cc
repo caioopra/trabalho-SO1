@@ -19,19 +19,13 @@ Thread::Ready_Queue Thread::_ready;
 void Thread::init(void (*main)(void*)) {
     db<Thread>(TRC) << " - Inicializando Threads Main e Dispatcher\n";
 
-    // new (&_ready) Thread::Ready_Queue();
-
     // "placement new" pra isntanciar Thread main
     new (&_main) Thread(main, (void*)"Main");
     new (&_main_context) CPU::Context();
     new (&_dispatcher) Thread(&dispatcher);
 
-    // criando thread Dispatcher, argumentos: *dispatcher(), (void*) NULL
-    // cast para void* de dispatcher() e depois para void o conteúdo desse void*
-
     _main._state = RUNNING;     // muda estado da thread main
-    _running = &_main;  // atualiza ponteiro da thread em exec
-
+    _running = &_main;          // atualiza ponteiro da thread em exec
 
     CPU::switch_context(&_main_context, _main.context());
 }
@@ -50,7 +44,7 @@ void Thread::thread_exit(int exit_code) {
     Thread::_thread_count--;
     _exit_code = exit_code;
     _state = FINISHING;
-    yield();  // devolve processador para dispatcher
+    yield();        // devolve processador para dispatcher
 }
 
 int Thread::id() {
@@ -62,8 +56,8 @@ void Thread::dispatcher() {
     
     while(Thread::_ready.size() > 0) {
         // retorna ponteiro para proxima thread na fila
-        db<Thread>(TRC) << " - remove linha 64 : " << Thread::_ready.size() << "\n";
         Thread* proxima_thread = Thread::_ready.remove_head()->object();
+        db<Thread>(TRC) << " - proxima thread : " << proxima_thread->id() << "\n";
         
         Thread::_dispatcher._state = READY;
         Thread::_ready.insert(&Thread::_dispatcher._link);
@@ -73,14 +67,11 @@ void Thread::dispatcher() {
         Thread::switch_context(&Thread::_dispatcher, proxima_thread);
 
         if (Thread::_ready.size() > 0 && Thread::_ready.head()->object()->_state == FINISHING){
-            db<Thread>(TRC) << " - remove linha 76 : " << Thread::_ready.size() << "\n";
             Thread::_ready.remove_head();
-
         }
     }
 
     Thread::_dispatcher._state = FINISHING;
-    // Thread::_ready.remove(&Thread::_dispatcher);
 
     db<Thread>(TRC) << " - Dispatcher liberado, indo para Thread Main \n";
     Thread::switch_context(&Thread::_dispatcher, &Thread::_main);
@@ -90,7 +81,6 @@ void Thread::yield(){
     db<Thread>(TRC) << " - yield chamado pela Thread " << Thread::_running->id() << "\n";
 
     Thread *current_thread = Thread::_running;
-    db<Thread>(TRC) << " - remove linha 92 : " << Thread::_ready.size() << "\n";
     Thread *proxima_thread = Thread::_ready.remove()->object();
     
     if(current_thread->_state != FINISHING && current_thread != &Thread::_main){

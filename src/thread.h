@@ -128,7 +128,7 @@ Thread::Thread(void (*entry)(Tn...), Tn... an) : _link(this, (std::chrono::durat
     this->_state = READY;
 
     if (_id > 0) {
-        _ready.insert_tail(&_link);
+        _ready.insert(&_link);
     }
 
 }
