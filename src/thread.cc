@@ -96,6 +96,30 @@ void Thread::yield(){
     Thread::switch_context(current_thread,proxima_thread);
 }
 
+int Thread::join() {
+    db<Thread>(TRC) << " - Thread " << id() << " fazendo join.\n";
+
+    // thread é suspensa até que as que ela está esperando finalizem
+    _joining = _running;
+    _joining->suspend();
+
+    return _exit_code;
+} 
+
+void Thread::suspend() {
+    db<Thread>(TRC) << " - Thread " << id() << "sendo suspensa.\n";
+
+    Thread::_ready.remove(this);   // remove thread da fila de prontos
+    _state = SUSPENDED;            // vai para estado de suspensa
+    Thread::_suspended.insert(&this->_link);  // entra na lista de suspensas
+
+    yield();  // deixa o processador
+}
+
+void Thread::resume() {
+
+}
+
 CPU::Context* Thread::context() {
     return _context;
 }

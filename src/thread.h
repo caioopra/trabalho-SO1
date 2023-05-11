@@ -22,7 +22,8 @@ class Thread {
     enum State {
         RUNNING,
         READY,
-        FINISHING
+        FINISHING,
+        SUSPENDED
     };
 
     /*
@@ -96,6 +97,17 @@ class Thread {
 
     Context* context();
 
+    /*
+     * Suspende thread até que a thread "alvo" finalize
+     */
+    int join();
+
+    // suspende thread até que resume seja chamado
+    void suspend();
+
+    // coloca thread suspensa de volta na fila de prontos
+    void resume();
+
    private:
     int _id;
     Context* volatile _context;
@@ -114,6 +126,11 @@ class Thread {
 
     static unsigned int _thread_count;
     int _exit_code;
+   
+    // threads que estão suspensas
+    static Ordered_List<Thread> _suspended;
+    // thread que fez join na que está rodando
+    Thread* _joining = nullptr;
 };
 
 // construtor das Threads
