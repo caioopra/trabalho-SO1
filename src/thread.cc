@@ -45,9 +45,10 @@ void Thread::thread_exit(int exit_code) {
     _exit_code = exit_code;
     _state = FINISHING;
 
-    Thread* _joining = nullptr;
-    while (Thread::_suspended.size() > 0) {
-        _joining = Thread::_suspended.remove_head()->object();
+    //Thread* _joining;
+    while (_suspended.size() > 0) {
+        Thread* _joining = _suspended.remove_head()->object();
+        db<Thread>(TRC) << " - Thread " << _joining->id() << " saindo\n"; 
         _joining->resume();
     }
 
@@ -112,7 +113,7 @@ int Thread::join() {
 
     if (_state != SUSPENDED) {
         // thread é suspensa até que as que ela está esperando finalizem
-        _suspended.insert(&_running->_suspended_link);
+        _suspended.insert(&_running->_link);
         _running->suspend();
     }
 
@@ -128,6 +129,7 @@ void Thread::suspend() {
 }
 
 void Thread::resume() {
+    db<Thread>(TRC) << " - Thread " << id() << " fez resume.\n";
     _state = READY;
     Thread::_ready.insert(&this->_link); 
 }

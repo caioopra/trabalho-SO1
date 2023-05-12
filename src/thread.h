@@ -120,7 +120,6 @@ class Thread {
     Ready_Queue::Element _link;
     volatile State _state;
     Suspended_Queue _suspended;
-    Suspended_Queue::Element _suspended_link;
 
     /*
      * Qualquer outro atributo que você achar necessário para a solução.
@@ -146,6 +145,7 @@ Thread::Thread(void (*entry)(Tn...), Tn... an) : _link(this, (std::chrono::durat
         _ready.insert(&_link);
     }
 
+    new (&_suspended) Suspended_Queue();
 }
 
 __END_API
