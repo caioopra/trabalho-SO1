@@ -17,7 +17,7 @@ class Thread {
 
    public:
     typedef Ordered_List<Thread> Ready_Queue;
-
+    typedef Ordered_List<Thread> Suspended_Queue;
     // Thread State
     enum State {
         RUNNING,
@@ -119,6 +119,8 @@ class Thread {
     static Ready_Queue _ready;
     Ready_Queue::Element _link;
     volatile State _state;
+    Suspended_Queue _suspended;
+    Suspended_Queue::Element _suspended_link;
 
     /*
      * Qualquer outro atributo que você achar necessário para a solução.
@@ -127,10 +129,6 @@ class Thread {
     static unsigned int _thread_count;
     int _exit_code;
    
-    // threads que estão suspensas
-    static Ordered_List<Thread> _suspended;
-    // thread que fez join na que está rodando
-    Thread* _joining = nullptr;
 };
 
 // construtor das Threads

@@ -44,6 +44,13 @@ void Thread::thread_exit(int exit_code) {
     Thread::_thread_count--;
     _exit_code = exit_code;
     _state = FINISHING;
+
+    Thread* _joining = nullptr;
+    while (Thread::_suspended.size() > 0) {
+        _joining = Thread::_suspended.remove_head()->object();
+        _joining->resume();
+    }
+
     yield();        // devolve processador para dispatcher
 }
 
@@ -77,7 +84,7 @@ void Thread::dispatcher() {
     Thread::switch_context(&Thread::_dispatcher, &Thread::_main);
 }
 
-void Thread::yield(){
+void Thread::yield() {
     db<Thread>(TRC) << " - yield chamado pela Thread " << Thread::_running->id() << "\n";
 
     Thread *current_thread = Thread::_running;
@@ -98,10 +105,16 @@ void Thread::yield(){
 
 int Thread::join() {
     db<Thread>(TRC) << " - Thread " << id() << " fazendo join.\n";
+    
+    if (_running == this) {
+        return -1;
+    }
 
-    // thread é suspensa até que as que ela está esperando finalizem
-    _joining = _running;
-    _joining->suspend();
+    if (_state != SUSPENDED) {
+        // thread é suspensa até que as que ela está esperando finalizem
+        _suspended.insert(&_running->_suspended_link);
+        _running->suspend();
+    }
 
     return _exit_code;
 } 
@@ -111,13 +124,12 @@ void Thread::suspend() {
 
     Thread::_ready.remove(this);   // remove thread da fila de prontos
     _state = SUSPENDED;            // vai para estado de suspensa
-    Thread::_suspended.insert(&this->_link);  // entra na lista de suspensas
-
     yield();  // deixa o processador
 }
 
 void Thread::resume() {
-
+    _state = READY;
+    Thread::_ready.insert(&this->_link); 
 }
 
 CPU::Context* Thread::context() {
