@@ -45,7 +45,7 @@ void Thread::thread_exit(int exit_code) {
     _exit_code = exit_code;
     _state = FINISHING;
 
-    //Thread* _joining;
+    // enquanto tiverem threads na fila que estava esperando pelo fim dessa, vai voltando elas para fila de pronto
     while (_suspended.size() > 0) {
         Thread* _joining = _suspended.remove_head()->object();
         db<Thread>(TRC) << " - Thread " << _joining->id() << " saindo\n"; 
@@ -106,7 +106,8 @@ void Thread::yield() {
 
 int Thread::join() {
     db<Thread>(TRC) << " - Thread " << id() << " fazendo join.\n";
-    
+   
+    // nao pode esperar por ela mesmo
     if (_running == this) {
         return -1;
     }
@@ -130,6 +131,7 @@ void Thread::suspend() {
 
 void Thread::resume() {
     db<Thread>(TRC) << " - Thread " << id() << " fez resume.\n";
+    // volta para a fila de prontos
     _state = READY;
     Thread::_ready.insert(&this->_link); 
 }

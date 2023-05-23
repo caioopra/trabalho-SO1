@@ -119,7 +119,7 @@ class Thread {
     static Ready_Queue _ready;
     Ready_Queue::Element _link;
     volatile State _state;
-    Suspended_Queue _suspended;
+    Suspended_Queue _suspended;     // fila de threads suspensas esperando o fim da thread
 
     /*
      * Qualquer outro atributo que você achar necessário para a solução.
@@ -145,6 +145,7 @@ Thread::Thread(void (*entry)(Tn...), Tn... an) : _link(this, (std::chrono::durat
         _ready.insert(&_link);
     }
 
+    // criação da fila de threads suspensas
     new (&_suspended) Suspended_Queue();
 }
 
