@@ -28,4 +28,18 @@ int CPU::switch_context(Context *from, Context *to) {
     }
 }
 
+int CPU::finc(volatile int& number) {
+    int reg = 1;
+    // faz lock durante xadd
+    // troca o valor dos operandos e coloca a soma dos dois no destino
+    asm("lock xadd %0, %2" : "=a" (reg) : "a" (reg), "m" (number));
+    return reg;
+}
+
+int CPU::fdec(volatile int& number) {
+    int reg = -1;
+    asm("lock xadd %0, %2" : "=a" (reg) : "a" (reg), "m" (number));
+    return reg;
+}
+
 __END_API

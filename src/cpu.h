@@ -33,6 +33,8 @@ class CPU {
 
    public:
     static int switch_context(Context *from, Context *to);
+    static int finc(volatile int &number);
+    static int fdec(volatile int &number);
 };
 
 template <typename ...Tn>
