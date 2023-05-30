@@ -47,7 +47,7 @@ void Thread::thread_exit(int exit_code) {
     _exit_code = exit_code;
     _state = FINISHING;
 
-    if (_joining == this)  {
+    if (this->_joining)  {
         _joining->resume();
         _joining = 0;
     }    
