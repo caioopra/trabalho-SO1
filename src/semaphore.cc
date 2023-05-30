@@ -11,6 +11,7 @@ Semaphore::~Semaphore() {
 void Semaphore::p() {
     db<Semaphore>(TRC) << "Semaphore antes de p(): " << _value << "\n";
     if (CPU::fdec(_value) < 1) {
+        
         sleep();  // bloqueia thread
     }
 }

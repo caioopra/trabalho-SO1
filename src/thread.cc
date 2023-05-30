@@ -91,7 +91,7 @@ void Thread::yield() {
     Thread *current_thread = Thread::_running;
     Thread *proxima_thread = Thread::_ready.remove()->object();
     
-    if(current_thread->_state != FINISHING && current_thread != &Thread::_main && current_thread->_state != WAITING){
+    if(current_thread->_state != FINISHING && current_thread != &Thread::_main && current_thread->_state != WAITING && current_thread->_state != SUSPENDED){
         current_thread->_link.rank(std::chrono::duration_cast<std::chrono::microseconds>
         (std::chrono::high_resolution_clock::now().time_since_epoch()).count());
         current_thread->_state = READY;
@@ -109,6 +109,7 @@ int Thread::join() {
    
     // nao pode esperar por ela mesmo
     if (_running == this) {
+        yield();
         return -1;
     }
 
@@ -124,14 +125,14 @@ int Thread::join() {
 void Thread::suspend() {
     db<Thread>(TRC) << " - Thread " << id() << "sendo suspensa.\n";
 
+    if (_running == this) {
+        yield();  // deixa o processador 
+    }
     _ready.remove(this);   // remove thread da fila de prontos
     _suspended.insert(&_running->_link);
     
-    if (_running == this) {
-        _state = SUSPENDED;
-        yield();  // deixa o processador 
-    }
-    _state = SUSPENDED;            // vai para estado de suspensa
+    _state = SUSPENDED;
+    // _state = SUSPENDED;            // vai para estado de suspensa
 }
 
 void Thread::resume() {
