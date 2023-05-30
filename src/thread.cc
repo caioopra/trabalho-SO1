@@ -14,6 +14,7 @@ Thread Thread::_main;
 CPU::Context Thread::_main_context;
 Thread Thread::_dispatcher;
 Thread::Ready_Queue Thread::_ready;
+Thread::Suspended_Queue Thread::_suspended;
 
 // métodos das classes
 void Thread::init(void (*main)(void*)) {
@@ -23,6 +24,7 @@ void Thread::init(void (*main)(void*)) {
     new (&_main) Thread(main, (void*)"Main");
     new (&_main_context) CPU::Context();
     new (&_dispatcher) Thread(&dispatcher);
+    new (&_suspended)  Thread::Suspended_Queue;
 
     _main._state = RUNNING;     // muda estado da thread main
     _running = &_main;          // atualiza ponteiro da thread em exec
@@ -45,13 +47,11 @@ void Thread::thread_exit(int exit_code) {
     _exit_code = exit_code;
     _state = FINISHING;
 
-    // enquanto tiverem threads na fila que estava esperando pelo fim dessa, vai voltando elas para fila de pronto
-    while (_suspended.size() > 0) {
-        Thread* _joining = _suspended.remove_head()->object();
-        db<Thread>(TRC) << " - Thread " << _joining->id() << " saindo\n"; 
+    if (_joining == this)  {
         _joining->resume();
-    }
-
+        _joining = nullptr;
+    }    
+  
     yield();        // devolve processador para dispatcher
 }
 
@@ -112,9 +112,8 @@ int Thread::join() {
         return -1;
     }
 
-    if (_state != SUSPENDED) {
+    if (_state != FINISHING) {
         // thread é suspensa até que as que ela está esperando finalizem
-        _suspended.insert(&_running->_link);
         _running->suspend();
     }
 
@@ -124,14 +123,19 @@ int Thread::join() {
 void Thread::suspend() {
     db<Thread>(TRC) << " - Thread " << id() << "sendo suspensa.\n";
 
+    _suspended.insert(&_running->_link);
     Thread::_ready.remove(this);   // remove thread da fila de prontos
+    if (_running == this) {
+        _state = SUSPENDED;
+        yield();  // deixa o processador 
+    }
     _state = SUSPENDED;            // vai para estado de suspensa
-    yield();  // deixa o processador
 }
 
 void Thread::resume() {
     db<Thread>(TRC) << " - Thread " << id() << " fez resume.\n";
     // volta para a fila de prontos
+    Thread::_suspended.remove(&this->_link); 
     _state = READY;
     Thread::_ready.insert(&this->_link); 
 }
