@@ -49,9 +49,9 @@ void Thread::thread_exit(int exit_code) {
 
     if (_joining == this)  {
         _joining->resume();
-        _joining = nullptr;
+        _joining = 0;
     }    
-  
+
     yield();        // devolve processador para dispatcher
 }
 
@@ -91,7 +91,7 @@ void Thread::yield() {
     Thread *current_thread = Thread::_running;
     Thread *proxima_thread = Thread::_ready.remove()->object();
     
-    if(current_thread->_state != FINISHING && current_thread != &Thread::_main){
+    if(current_thread->_state != FINISHING && current_thread != &Thread::_main && current_thread->_state != WAITING){
         current_thread->_link.rank(std::chrono::duration_cast<std::chrono::microseconds>
         (std::chrono::high_resolution_clock::now().time_since_epoch()).count());
         current_thread->_state = READY;
@@ -114,6 +114,7 @@ int Thread::join() {
 
     if (_state != FINISHING) {
         // thread é suspensa até que as que ela está esperando finalizem
+        _joining = running();
         _running->suspend();
     }
 
@@ -123,8 +124,9 @@ int Thread::join() {
 void Thread::suspend() {
     db<Thread>(TRC) << " - Thread " << id() << "sendo suspensa.\n";
 
+    _ready.remove(this);   // remove thread da fila de prontos
     _suspended.insert(&_running->_link);
-    Thread::_ready.remove(this);   // remove thread da fila de prontos
+    
     if (_running == this) {
         _state = SUSPENDED;
         yield();  // deixa o processador 
@@ -135,13 +137,31 @@ void Thread::suspend() {
 void Thread::resume() {
     db<Thread>(TRC) << " - Thread " << id() << " fez resume.\n";
     // volta para a fila de prontos
-    Thread::_suspended.remove(&this->_link); 
+    _suspended.remove(&this->_link); 
     _state = READY;
-    Thread::_ready.insert(&this->_link); 
+    _ready.insert(&this->_link); 
 }
 
 CPU::Context* Thread::context() {
     return _context;
+}
+
+void Thread::sleep() {
+    db<Thread>(TRC) << " - Thread " << id() << " sleep\n";
+    Thread* thread_running = running();
+    thread_running->_state = WAITING;
+    yield();
+}
+
+void Thread::wakeup()
+{
+    db<Thread>(TRC) << " - Thread " << id() << " wakeup\n";
+
+    this->_state = READY;
+    int now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+    this->_link.rank(now);
+    _ready.insert(&this->_link);
+    yield();
 }
 
 Thread::~Thread() {

@@ -107,6 +107,10 @@ class Thread {
     // coloca thread suspensa de volta na fila de prontos
     void resume();
 
+    void sleep();
+
+    void wakeup();
+
    private:
     int _id;
     Context* volatile _context;
