@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <ctime>
+#include <queue>
 
 #include "cpu.h"
 #include "debug.h"
@@ -18,6 +19,7 @@ class Thread {
    public:
     typedef Ordered_List<Thread> Ready_Queue;
     typedef Ordered_List<Thread> Suspended_Queue;
+    typedef std::queue<Thread*> Sleep_queue;
     // Thread State
     enum State {
         RUNNING,
@@ -107,7 +109,7 @@ class Thread {
     // coloca thread suspensa de volta na fila de prontos
     void resume();
 
-    void sleep();
+    void sleep(Sleep_queue *sleep_queue);
 
     void wakeup();
 
@@ -131,7 +133,7 @@ class Thread {
 
     static unsigned int _thread_count;
     int _exit_code;
-   
+    Sleep_queue* _sleep_queue;      
 };
 
 // construtor das Threads

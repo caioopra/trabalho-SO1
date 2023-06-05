@@ -125,30 +125,36 @@ int Thread::join() {
 void Thread::suspend() {
     db<Thread>(TRC) << " - Thread " << id() << "sendo suspensa.\n";
 
+    _ready.remove(this);   // remove thread da fila de prontos
+    _suspended.insert(&this->_link);
+    _state = SUSPENDED;
+    
     if (_running == this) {
         yield();  // deixa o processador 
-    }
-    _ready.remove(this);   // remove thread da fila de prontos
-    _suspended.insert(&_running->_link);
-    
-    _state = SUSPENDED;
-    // _state = SUSPENDED;            // vai para estado de suspensa
+    }    
 }
 
 void Thread::resume() {
     db<Thread>(TRC) << " - Thread " << id() << " fez resume.\n";
     // volta para a fila de prontos
-    _suspended.remove(&this->_link); 
-    _state = READY;
-    _ready.insert(&this->_link); 
+    if (_state == SUSPENDED) {
+         _suspended.remove(&_link); 
+        _state = READY;
+        _ready.insert(&_link);  
+    }
 }
 
 CPU::Context* Thread::context() {
     return _context;
 }
 
-void Thread::sleep() {
+void Thread::sleep(Sleep_queue *sleep_queue) {
     db<Thread>(TRC) << " - Thread " << id() << " sleep\n";
+    if (!sleep_queue) {
+        _sleep_queue = sleep_queue;
+    }
+
+    sleep_queue->push(this);
     Thread* thread_running = running();
     thread_running->_state = WAITING;
     yield();
@@ -157,19 +163,24 @@ void Thread::sleep() {
 void Thread::wakeup()
 {
     db<Thread>(TRC) << " - Thread " << id() << " wakeup\n";
-
-    this->_state = READY;
+    _state = READY;
+    _sleep_queue->pop();
     int now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-    this->_link.rank(now);
-    _ready.insert(&this->_link);
+    _link.rank(now);
+    _ready.insert(&_link);
+    _sleep_queue = nullptr;
     yield();
 }
 
 Thread::~Thread() {
     db<Thread>(TRC) << " - fim da thread " << id() << "\n";
-    Thread::_ready.remove(&this->_link);
-    if (this->context()){
-        delete this->_context;
+    Thread::_ready.remove(&_link);
+    if (context()){
+        delete _context;
+    }
+
+    if (_sleep_queue) {
+        _sleep_queue->pop();
     }
 }
 

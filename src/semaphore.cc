@@ -25,15 +25,13 @@ void Semaphore::v() {
 
 void Semaphore::sleep() {
     Thread* thread_running = Thread::running();
+    thread_running->sleep(&_sleeping); 
     db<Semaphore>(TRC) << " - Semáforo fazendo sleep em Thread " << thread_running->id() << "\n";
-    _sleeping.push(thread_running);
-    thread_running->sleep();
 }
 
 void Semaphore::wakeup() {
     Thread* thread_waking_up = _sleeping.front();
     db<Semaphore>(TRC) << " - Semáforo fazendo wakeup em Thread " << thread_waking_up->id() << "\n";
-    _sleeping.pop();
     thread_waking_up->wakeup();
 }
 
