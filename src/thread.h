@@ -19,7 +19,7 @@ class Thread {
    public:
     typedef Ordered_List<Thread> Ready_Queue;
     typedef Ordered_List<Thread> Suspended_Queue;
-    typedef std::queue<Thread*> Sleep_queue;
+    typedef Ordered_List<Thread> Sleep_queue;
     // Thread State
     enum State {
         RUNNING,

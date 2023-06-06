@@ -149,12 +149,12 @@ CPU::Context* Thread::context() {
 }
 
 void Thread::sleep(Sleep_queue *sleep_queue) {
-    db<Thread>(TRC) << " - Thread " << id() << " sleep " << sleep_queue << "\n";
+    db<Thread>(TRC) << " - Thread " << id() << " sleep \n";
     if (!_sleep_queue) {
         _sleep_queue = sleep_queue;
     }
 
-    sleep_queue->push(this);
+    _sleep_queue->insert(&_link);
     Thread* thread_running = running();
     thread_running->_state = WAITING;
     yield();
@@ -164,7 +164,6 @@ void Thread::wakeup()
 {
     db<Thread>(TRC) << " - Thread " << id() << " wakeup\n";
     _state = READY;
-    _sleep_queue->pop();
     int now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
     _link.rank(now);
     _ready.insert(&_link);
@@ -175,14 +174,17 @@ void Thread::wakeup()
 
 Thread::~Thread() {
     db<Thread>(TRC) << " - fim da thread " << id() << "\n";
-    Thread::_ready.remove(&_link);
+//    _ready.remove(&_link); 
+    if (_sleep_queue) {
+        _sleep_queue->remove(&_link);
+    } else {
+        _ready.remove(&_link);
+    }
+
     if (context()){
         delete _context;
     }
 
-    if (_sleep_queue) {
-        _sleep_queue->pop();
-    }
 }
 
 __END_API

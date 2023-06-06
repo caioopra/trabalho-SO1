@@ -5,14 +5,15 @@
 #include "thread.h"
 #include "traits.h"
 #include "debug.h"
-#include <queue>
+#include "list.h"
+
 
 __BEGIN_API
 
 class Semaphore
 {
 public:
-    typedef std::queue<Thread *> Sleep_queue;
+    typedef Ordered_List<Thread> Sleep_queue;
     Semaphore(int v = 1) : _value(v) {}; // valor padrão 1, caso especificado, muda _value
     ~Semaphore();
 

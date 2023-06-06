@@ -10,8 +10,7 @@ Semaphore::~Semaphore() {
 
 void Semaphore::p() {
     db<Semaphore>(TRC) << "Semaphore antes de p(): " << _value << "\n";
-    if (CPU::fdec(_value) < 1) {
-        
+    if (CPU::fdec(_value) < 1) { 
         sleep();  // bloqueia thread
     }
 }
@@ -30,7 +29,7 @@ void Semaphore::sleep() {
 }
 
 void Semaphore::wakeup() {
-    Thread* thread_waking_up = _sleeping.front();
+    Thread* thread_waking_up = _sleeping.remove_head()->object();
     db<Semaphore>(TRC) << " - Semáforo fazendo wakeup em Thread " << thread_waking_up->id() << "\n";
     thread_waking_up->wakeup();
 }
