@@ -149,8 +149,8 @@ CPU::Context* Thread::context() {
 }
 
 void Thread::sleep(Sleep_queue *sleep_queue) {
-    db<Thread>(TRC) << " - Thread " << id() << " sleep\n";
-    if (!sleep_queue) {
+    db<Thread>(TRC) << " - Thread " << id() << " sleep " << sleep_queue << "\n";
+    if (!_sleep_queue) {
         _sleep_queue = sleep_queue;
     }
 
@@ -168,6 +168,7 @@ void Thread::wakeup()
     int now = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
     _link.rank(now);
     _ready.insert(&_link);
+
     _sleep_queue = nullptr;
     yield();
 }
